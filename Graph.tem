@@ -41,9 +41,7 @@ namespace gdwg {
     
     template <typename N, typename E>
     bool Graph::isConnected(const N& src, const N& dst) const {
-        // TODO
-        // how do with set, since dst a member of the Edge?
-        // dont use set, and use a filter instead?
+        return nodes.count(src) && nodes[src].count(dst);
     }
     
     template <typename N, typename E>
