@@ -1,6 +1,9 @@
 #ifndef GDWG_H
 #define GDWG_H
 
+#include <map>
+#include <set>
+
 namespace gdwg {
     template <typename N, typename E> class Graph {
         public:
@@ -27,7 +30,15 @@ namespace gdwg {
             bool end() const;
             void next() const;
             const N& value() const;
-        // private:
+        private:
+            struct Edge {
+                Edge(const N& d, const E& w): dest{d}, weight{w} {}
+                N dest;
+                E weight;
+            }
+
+            std::map<N, std::set<Edge>> nodes;
+
             // mutable iterator?
     }
 
