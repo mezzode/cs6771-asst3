@@ -1,0 +1,58 @@
+namespace gdwg {
+    template <typename N, typename E>
+    bool Graph::addNode(const N& val) {
+        nodes[val] = std::set<Edge>(); 
+    }
+
+    template <typename N, typename E>
+    bool Graph::addEdge(const N& src, const N& dst, const E& w) {
+        nodes[src].insert(Edge{dst, w});
+    }
+    
+    template <typename N, typename E>
+    bool Graph::replace(const N& oldData, const N& newData) {
+        // TODO
+    }
+    
+    template <typename N, typename E>
+    void Graph::mergeReplace(const N& oldData, const N& newData) {
+        // TODO
+    }
+    
+    template <typename N, typename E>
+    void Graph::deleteNode(const N&) noexcept {
+        // TODO
+    }
+    
+    template <typename N, typename E>
+    void Graph::deleteEdge(const N& src, const N& dst, const E& w) noexcept {
+        // TODO
+    }
+    
+    template <typename N, typename E>
+    void Graph::clear() noexcept {
+        nodes.clear();
+    }
+    
+    template <typename N, typename E>
+    bool Graph::isNode(const N& val) const {
+        return static_cast<bool>(nodes.count(val));
+    }
+    
+    template <typename N, typename E>
+    bool Graph::isConnected(const N& src, const N& dst) const {
+        // TODO
+        // how do with set, since dst a member of the Edge?
+        // dont use set, and use a filter instead?
+    }
+    
+    template <typename N, typename E>
+    void Graph::printNodes() const {
+        // TODO
+    }
+    
+    template <typename N, typename E>
+    void Graph::printEdges(const N& val) const {
+        // TODO
+    }
+}

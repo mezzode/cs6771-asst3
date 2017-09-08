@@ -7,7 +7,8 @@
 namespace gdwg {
     template <typename N, typename E> class Graph {
         public:
-            Graph();
+            // just using default constructor for now
+            // Graph();
 
             bool addNode(const N& val);
             bool addEdge(const N& src, const N& dst, const E& w);
@@ -32,8 +33,8 @@ namespace gdwg {
             const N& value() const;
         private:
             struct Edge {
-                Edge(const N& d, const E& w): dest{d}, weight{w} {}
-                N dest;
+                Edge(const N& d, const E& w): dst{d}, weight{w} {}
+                N dst;
                 E weight;
             }
 
