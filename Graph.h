@@ -32,13 +32,13 @@ namespace gdwg {
             void next() const;
             const N& value() const;
         private:
-            struct Edge {
-                Edge(const N& d, const E& w): dst{d}, weight{w} {}
-                N dst;
-                E weight;
-            }
+            // struct Edge {
+            //     Edge(const N& d, const E& w): dst{d}, weight{w} {}
+            //     N dst;
+            //     E weight;
+            // }
 
-            std::map<N, std::set<Edge>> nodes;
+            std::map<N, std::map<N, E>> nodes;
 
             // mutable iterator?
     }

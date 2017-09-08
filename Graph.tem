@@ -1,12 +1,12 @@
 namespace gdwg {
     template <typename N, typename E>
     bool Graph::addNode(const N& val) {
-        nodes[val] = std::set<Edge>(); 
+        nodes[val] = std::map<N, E>(); 
     }
 
     template <typename N, typename E>
     bool Graph::addEdge(const N& src, const N& dst, const E& w) {
-        nodes[src].insert(Edge{dst, w});
+        nodes[src][dst] = w;
     }
     
     template <typename N, typename E>
