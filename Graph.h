@@ -56,6 +56,10 @@ namespace gdwg {
                     }
                     return false;
                 }
+
+                unsigned int outdegree() {
+                    return outEdges.size();
+                }
             }
 
             struct Edge {

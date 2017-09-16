@@ -110,7 +110,7 @@ void Graph<N, E>::clear() noexcept {
 
 template <typename N, typename E>
 bool Graph<N, E>::isNode(const N& val) const {
-    return static_cast<bool>(nodes.count(val));
+    return nodes.count(val) > 0;
 }
 
 template <typename N, typename E>
@@ -123,12 +123,49 @@ bool Graph<N, E>::isConnected(const N& src, const N& dst) const {
 
 template <typename N, typename E>
 void Graph<N, E>::printNodes() const {
-    // TODO
+    std::vector<shared_ptr<Node>> tmp;
+    for (auto& kv : nodes) {
+        tmp.push_back(kv.second);
+    }
+    std::sort(std::begin(tmp), std::end(tmp),
+        [](const shared_ptr<Node>& a, const shared_ptr<Node>& b) -> bool {
+            if (a->outdegree() != b->outdegree()) {
+                return a->outdegree() < b->outdegree();
+            }
+            return a->val < b->val;
+        }
+    );
+    for (shared_ptr<Node> node : tmp) {
+        std::cout << node->val << std::endl;
+    }
 }
 
 template <typename N, typename E>
 void Graph<N, E>::printEdges(const N& val) const {
-    // TODO
+    if (!isNode(val)) {
+        throw std::runtime_error();
+    }
+    shared_ptr<Node> node = nodes[val];
+    std::cout << "Edges attached to Node " << node->val << std::endl;
+    if (node->outdegree() == 0) {
+        std::cout << "(null)" << std::endl;
+        return;
+    }
+    std::vector<shared_ptr<Edge>> tmp;
+    for (auto& edge : node->outEdges) {
+        tmp.push_back(edge);
+    }
+    std::sort(std::begin(tmp), std::end(tmp),
+        [](const shared_ptr<Edge>& a, const shared_ptr<Edge>& b) -> bool {
+            if (a->w != b->w) {
+                return a->w < b->w;
+            }
+            return a->dst->val < b->dst->val;
+        }
+    );
+    for (shared_ptr<Edge> edge : tmp) {
+        std::cout << edge->dst->val << edge->w << std::endl;
+    }
 }
 
 template <typename N, typename E>
