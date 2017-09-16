@@ -1,56 +1,152 @@
-namespace gdwg {
-    template <typename N, typename E>
-    bool Graph::addNode(const N& val) {
-        nodes[val] = std::map<N, E>(); 
+template <typename N, typename E>
+bool Graph<N, E>::addNode(const N& val) {
+    if (isNode(val)) {
+        return false;
+    }
+    nodes[val] = std::make_shared<Node>(val);
+    return true;
+}
+
+template <typename N, typename E>
+bool Graph<N, E>::addEdge(const N& src, const N& dst, const E& w) {
+    shared_ptr<Node> s = nodes[src];
+    shared_ptr<Node> d = nodes[dst];
+    shared_ptr<Edge> e = std::make_shared<Edge>(s, d, w);
+    *s.edges.insert(e);
+    *d.edges.insert(e);
+}
+
+template <typename N, typename E>
+bool Graph<N, E>::replace(const N& oldData, const N& newData) {
+    if (!isNode(oldData)) {
+        throw std::runtime_error();
+    }
+    if (isNode(newData)) {
+        return false;
     }
 
-    template <typename N, typename E>
-    bool Graph::addEdge(const N& src, const N& dst, const E& w) {
-        nodes[src][dst] = w;
+    shared_ptr<Node> n = nodes[oldData];
+    nodes[newData] = n;
+    *n.val = newData;
+    nodes.erase(oldData);
+    return true;
+}
+
+template <typename N, typename E>
+void Graph<N, E>::mergeReplace(const N& oldData, const N& newData) {
+    if (!isNode(oldData) || !isNode(newData)) {
+        throw std::runtime_error();
     }
-    
-    template <typename N, typename E>
-    bool Graph::replace(const N& oldData, const N& newData) {
-        // TODO
+
+    shared_ptr<Node> newNode = nodes[newData];
+    shared_ptr<Node> oldNode = nodes[oldData];
+    nodes.erase(oldData);
+    // at this point, oldNode should be the only shared_ptr to that node
+    for (auto edge : oldNode->inEdges) {
+        edge->dst = newNode;
+        newNode->inEdges.insert(edge);
     }
-    
-    template <typename N, typename E>
-    void Graph::mergeReplace(const N& oldData, const N& newData) {
-        // TODO
+    for (auto edge : oldNode->outEdges) {
+        edge->src = newNode;
+        newNode->outEdges.insert(edge);
     }
-    
-    template <typename N, typename E>
-    void Graph::deleteNode(const N&) noexcept {
-        // TODO
+
+    // remove duplicates i.e. same src, dest and weight
+    std::set<std::pair<E, weak_ptr<Node>>> seen;
+    for (auto it = std::begin(newNode->inEdges); it != std::end(newNode->inEdges); ++it) {
+        auto result = seen.insert(std::make_pair(it->w, it->src)); // (*it)->w is the proper thingo but may be unnecessary since -> chaining?
+        if (!result.second) {
+            // already seen, thus is duplicate so delete
+            it = newNode->inEdges.erase(it);
+        }
     }
-    
-    template <typename N, typename E>
-    void Graph::deleteEdge(const N& src, const N& dst, const E& w) noexcept {
-        // TODO
+    seen.clear();
+    for (auto it = std::begin(newNode->outEdges); it != std::end(newNode->outEdges); ++it) {
+        auto result = seen.insert(std::make_pair(it->w, it->src)); // (*it)->w is the proper thingo but may be unnecessary since -> chaining?
+        if (!result.second) {
+            // already seen, thus is duplicate so delete
+            it = newNode->outEdges.erase(it);
+        }
     }
-    
-    template <typename N, typename E>
-    void Graph::clear() noexcept {
-        nodes.clear();
+}
+
+template <typename N, typename E>
+void Graph<N, E>::deleteNode(const N& n) noexcept {
+    if (!isNode(n)) {
+        return;
     }
-    
-    template <typename N, typename E>
-    bool Graph::isNode(const N& val) const {
-        return static_cast<bool>(nodes.count(val));
+    shared_ptr<Node> node = nodes[n];
+    for (auto edge : node->inEdges) {
+        deleteEdge(edge->src->val, edge->dst->val, edge->w);
     }
-    
-    template <typename N, typename E>
-    bool Graph::isConnected(const N& src, const N& dst) const {
-        return nodes.count(src) && nodes[src].count(dst);
+    for (auto edge : node->outEdges) {
+        // node->val should be same as edge->src->val
+        deleteEdge(edge->src->val, edge->dst->val, edge->w);
     }
-    
-    template <typename N, typename E>
-    void Graph::printNodes() const {
-        // TODO
+    nodes.erase(n);
+}
+
+template <typename N, typename E>
+void Graph<N, E>::deleteEdge(const N& src, const N& dst, const E& w) noexcept {
+    // first check if correctly identifies an edge
+    if (!isNode(src) || !isNode(dst)) {
+        return;
     }
-    
-    template <typename N, typename E>
-    void Graph::printEdges(const N& val) const {
-        // TODO
+    shared_ptr<Edge> edge = nodes[src].getEdgeTo(dst, w);
+    if (edge == nullptr) {
+        // edge does not exist
+        return;
     }
+
+    // remove edge from src and dst nodes
+    nodes[src]->outEdges.erase(edge);
+    nodes[dst]->inEdges.erase(edge);
+}
+
+template <typename N, typename E>
+void Graph<N, E>::clear() noexcept {
+    nodes.clear();
+}
+
+template <typename N, typename E>
+bool Graph<N, E>::isNode(const N& val) const {
+    return static_cast<bool>(nodes.count(val));
+}
+
+template <typename N, typename E>
+bool Graph<N, E>::isConnected(const N& src, const N& dst) const {
+    if (!isNode(src) || !isNode(dst)) {
+        throw std::runtime_error();
+    }
+    return nodes[src]->isConnected(dst);
+}
+
+template <typename N, typename E>
+void Graph<N, E>::printNodes() const {
+    // TODO
+}
+
+template <typename N, typename E>
+void Graph<N, E>::printEdges(const N& val) const {
+    // TODO
+}
+
+template <typename N, typename E>
+void Graph<N, E>::begin() const {
+    it = nodes.begin();
+}
+
+template <typename N, typename E>
+bool Graph<N, E>::end() const {
+    return it == nodes.end();
+}
+
+template <typename N, typename E>
+void Graph<N, E>::next() const {
+    ++it;
+}
+
+template <typename N, typename E>
+const N& Graph<N, E>::value() const {
+    return *it;
 }

@@ -6,6 +6,8 @@
 
 namespace gdwg {
     template <typename N, typename E> class Graph {
+        using std::shared_ptr;
+        using std::weak_ptr; // are these needed?
         public:
             // just using default constructor for now
             // Graph();
@@ -22,25 +24,50 @@ namespace gdwg {
             void printNodes() const;
             void printEdges(const N& val) const;
 
-            // the following four operations provide a fake iterator for
-            // enumerating all the node values in a graph. You can abstract a
-            // graph in any sequence, as long as the sequence consists of all
-            // and only the nodes in the graph. 
-            // should be short. use mutable. reference solution uses 1 line per function
             void begin() const;
             bool end() const;
             void next() const;
             const N& value() const;
         private:
-            // struct Edge {
-            //     Edge(const N& d, const E& w): dst{d}, weight{w} {}
-            //     N dst;
-            //     E weight;
-            // }
+            struct Node {
+                Node(const N& val_): val{src_} {}
+                N val;
 
-            std::map<N, std::map<N, E>> nodes;
+                // edges which have this node as their destination
+                std::set<shared_ptr<Edge>> inEdges;
 
-            // mutable iterator?
+                // edges which have this node as their source
+                std::set<shared_ptr<Edge>> outEdges;
+
+                shared_ptr<Edge> getEdgeTo(const N& dst, const E& w) {
+                    for (auto edge : outEdges) {
+                        if ((edge->w == w) && (edge->dst->val == dst)) {
+                            return edge;
+                        }
+                    }
+                    return nullptr;
+                }
+
+                bool isConnected(const N& dst) {
+                    for (auto edge : outEdges) {
+                        if (edge->dst->val == dst) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            struct Edge {
+                Edge(shared_ptr<Node> src_, shared_ptr<Node> dst_, const E& w): src{src_}, dst{dst_}, w{w_} {}
+                weak_ptr<Node> src;
+                weak_ptr<Node> dst;
+                E w;
+            }
+
+            std::map<N, shared_ptr<Node> nodes;
+
+            mutable decltype(nodes.begin()) it;
     }
 
     #include "Graph.tem"
