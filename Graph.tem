@@ -15,7 +15,7 @@ bool Graph<N, E>::addEdge(const N& src, const N& dst, const E& w) {
     shared_ptr<Node> s = nodes[src];
     shared_ptr<Node> d = nodes[dst];
     shared_ptr<Edge> e = s->getEdgeTo(dst, w);
-    if (e == nullptr) {
+    if (e != nullptr) {
         // edge already exists
         return false;
     }
@@ -183,7 +183,7 @@ void Graph<N, E>::printEdges(const N& val) const {
     );
     for (shared_ptr<Edge> edge : tmp) {
         shared_ptr<Node> dst = edge->dst.lock();
-        std::cout << dst->val << edge->w << std::endl;
+        std::cout << dst->val << ' ' << edge->w << std::endl;
     }
 }
 
