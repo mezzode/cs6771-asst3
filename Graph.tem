@@ -1,4 +1,27 @@
 template <typename N, typename E>
+Graph<N, E>::Graph(const Graph& original) {
+    for (auto kv : original.nodes) {
+        // nodes[kv.first] = std::make_shared<Node>(*kv.second) // shared_ptr to copy of node
+        addNode(kv.first);
+    }
+    for (auto kv : original.nodes) {
+        for (shared_ptr<Edge> edge : kv.second->outEdges) {
+            shared_ptr<Node> src = edge->src.lock();
+            shared_ptr<Node> dst = edge->dst.lock();
+            addEdge(src->val, dst->val, edge->w);
+        }
+    }
+}
+
+template <typename N, typename E>
+Graph<N, E>& Graph<N, E>::operator=(Graph &original) {
+    // copy and swap
+    Graph tmp = original;
+    swap(tmp, *this);
+    return *this;
+}
+
+template <typename N, typename E>
 bool Graph<N, E>::addNode(const N& val) {
     if (isNode(val)) {
         return false;
@@ -207,4 +230,11 @@ void Graph<N, E>::next() const {
 template <typename N, typename E>
 const N& Graph<N, E>::value() const {
     return it->first;
+}
+
+template <typename N, typename E>
+void swap(Graph<N, E>& a, Graph<N, E>& b) {
+    using std::swap;
+    swap(a.nodes, b.nodes);
+    swap(a.it, b.it);
 }

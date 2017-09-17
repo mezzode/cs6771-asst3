@@ -14,8 +14,20 @@ namespace gdwg {
     using std::weak_ptr;
     template <typename N, typename E> class Graph {
         public:
-            // just using default constructor for now
-            // Graph();
+            // default default constructor
+            Graph() = default;
+
+            // default move constructor
+            Graph(Graph &&original) = default;
+
+            // copy constructor
+            Graph(const Graph& original);
+
+            // default move assignment
+            Graph& operator=(Graph &&original) = default;
+
+            // copy assignment
+            Graph& operator=(Graph &original);
 
             bool addNode(const N& val);
             bool addEdge(const N& src, const N& dst, const E& w);
@@ -37,6 +49,7 @@ namespace gdwg {
             struct Edge;
             struct Node {
                 Node(const N& val_): val{val_} {}
+
                 N val;
 
                 // edges which have this node as their destination
@@ -80,6 +93,9 @@ namespace gdwg {
             std::map<N, shared_ptr<Node>> nodes;
 
             mutable decltype(nodes.cbegin()) it;
+
+            template <typename N_, typename E_>
+            friend void swap(Graph<N_, E_>& a, Graph<N_, E_>& b);
     };
 
     #include "Graph.tem"
