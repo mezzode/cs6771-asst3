@@ -1,7 +1,6 @@
 template <typename N, typename E>
 Graph<N, E>::Graph(const Graph& original) {
     for (auto kv : original.nodes) {
-        // nodes[kv.first] = std::make_shared<Node>(*kv.second) // shared_ptr to copy of node
         addNode(kv.first);
     }
     for (auto kv : original.nodes) {

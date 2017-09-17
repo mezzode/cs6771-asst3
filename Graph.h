@@ -58,7 +58,7 @@ namespace gdwg {
                 // edges which have this node as their source
                 std::set<shared_ptr<Edge>> outEdges;
 
-                shared_ptr<Edge> getEdgeTo(const N& dst, const E& w) {
+                shared_ptr<Edge> getEdgeTo(const N& dst, const E& w) const {
                     for (auto edge : outEdges) {
                         shared_ptr<Node> dst_ = edge->dst.lock();
                         if ((edge->w == w) && (dst_->val == dst)) {
@@ -68,7 +68,7 @@ namespace gdwg {
                     return nullptr;
                 }
 
-                bool isConnected(const N& dst) {
+                bool isConnected(const N& dst) const {
                     for (auto edge : outEdges) {
                         shared_ptr<Node> dst_ = edge->dst.lock();
                         if (dst_->val == dst) {
@@ -78,7 +78,7 @@ namespace gdwg {
                     return false;
                 }
 
-                unsigned int outdegree() {
+                unsigned int outdegree() const {
                     return outEdges.size();
                 }
             };
