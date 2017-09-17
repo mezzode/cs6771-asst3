@@ -47,7 +47,8 @@ namespace gdwg {
 
                 shared_ptr<Edge> getEdgeTo(const N& dst, const E& w) {
                     for (auto edge : outEdges) {
-                        if ((edge->w == w) && (edge->dst->val == dst)) {
+                        shared_ptr<Node> dst_ = edge->dst.lock();
+                        if ((edge->w == w) && (dst_->val == dst)) {
                             return edge;
                         }
                     }
@@ -56,7 +57,8 @@ namespace gdwg {
 
                 bool isConnected(const N& dst) {
                     for (auto edge : outEdges) {
-                        if (edge->dst->val == dst) {
+                        shared_ptr<Node> dst_ = edge->dst.lock();
+                        if (dst_->val == dst) {
                             return true;
                         }
                     }

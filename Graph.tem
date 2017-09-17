@@ -10,11 +10,11 @@ bool Graph<N, E>::addNode(const N& val) {
 template <typename N, typename E>
 bool Graph<N, E>::addEdge(const N& src, const N& dst, const E& w) {
     if (!isNode(src) || !isNode(dst)) {
-        throw std::runtime_error();
+        throw std::runtime_error("Invalid src or dst");
     }
     shared_ptr<Node> s = nodes[src];
     shared_ptr<Node> d = nodes[dst];
-    shared_ptr<Edge> e = s.getEdgeTo(d, w);
+    shared_ptr<Edge> e = s->getEdgeTo(dst, w);
     if (e == nullptr) {
         // edge already exists
         return false;
@@ -23,12 +23,13 @@ bool Graph<N, E>::addEdge(const N& src, const N& dst, const E& w) {
     e = std::make_shared<Edge>(s, d, w);
     s->outEdges.insert(e);
     d->inEdges.insert(e);
+    return true;
 }
 
 template <typename N, typename E>
 bool Graph<N, E>::replace(const N& oldData, const N& newData) {
     if (!isNode(oldData)) {
-        throw std::runtime_error();
+        throw std::runtime_error("Invalid oldData");
     }
     if (isNode(newData)) {
         return false;
@@ -44,7 +45,7 @@ bool Graph<N, E>::replace(const N& oldData, const N& newData) {
 template <typename N, typename E>
 void Graph<N, E>::mergeReplace(const N& oldData, const N& newData) {
     if (!isNode(oldData) || !isNode(newData)) {
-        throw std::runtime_error();
+        throw std::runtime_error("Invalid oldData or newData");
     }
 
     shared_ptr<Node> newNode = nodes[newData];
@@ -86,11 +87,15 @@ void Graph<N, E>::deleteNode(const N& n) noexcept {
     }
     shared_ptr<Node> node = nodes[n];
     for (auto edge : node->inEdges) {
-        deleteEdge(edge->src->val, edge->dst->val, edge->w);
+        shared_ptr<Node> src = edge->src.lock();
+        shared_ptr<Node> dst = edge->dst.lock();
+        deleteEdge(src->val, dst->val, edge->w);
     }
     for (auto edge : node->outEdges) {
         // node->val should be same as edge->src->val
-        deleteEdge(edge->src->val, edge->dst->val, edge->w);
+        shared_ptr<Node> src = edge->src.lock();
+        shared_ptr<Node> dst = edge->dst.lock();
+        deleteEdge(src->val, dst->val, edge->w);
     }
     nodes.erase(n);
 }
@@ -125,9 +130,9 @@ bool Graph<N, E>::isNode(const N& val) const {
 template <typename N, typename E>
 bool Graph<N, E>::isConnected(const N& src, const N& dst) const {
     if (!isNode(src) || !isNode(dst)) {
-        throw std::runtime_error();
+        throw std::runtime_error("Invalid src or dst");
     }
-    return nodes[src]->isConnected(dst);
+    return nodes.at(src)->isConnected(dst);
 }
 
 template <typename N, typename E>
@@ -152,9 +157,9 @@ void Graph<N, E>::printNodes() const {
 template <typename N, typename E>
 void Graph<N, E>::printEdges(const N& val) const {
     if (!isNode(val)) {
-        throw std::runtime_error();
+        throw std::runtime_error("Invalid val");
     }
-    shared_ptr<Node> node = nodes[val];
+    const shared_ptr<Node> node = nodes.at(val);
     std::cout << "Edges attached to Node " << node->val << std::endl;
     if (node->outdegree() == 0) {
         std::cout << "(null)" << std::endl;
@@ -169,11 +174,14 @@ void Graph<N, E>::printEdges(const N& val) const {
             if (a->w != b->w) {
                 return a->w < b->w;
             }
-            return a->dst->val < b->dst->val;
+            shared_ptr<Node> aDst = a->dst.lock();
+            shared_ptr<Node> bDst = b->dst.lock();
+            return aDst->val < bDst->val;
         }
     );
     for (shared_ptr<Edge> edge : tmp) {
-        std::cout << edge->dst->val << edge->w << std::endl;
+        shared_ptr<Node> dst = edge->dst.lock();
+        std::cout << dst->val << edge->w << std::endl;
     }
 }
 
