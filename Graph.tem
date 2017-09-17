@@ -72,12 +72,14 @@ void Graph<N, E>::mergeReplace(const N& oldData, const N& newData) {
         }
     }
     seen.clear();
-    for (auto it = std::begin(newNode->outEdges); it != std::end(newNode->outEdges); ++it) {
+    for (auto it = std::begin(newNode->outEdges); it != std::end(newNode->outEdges);) {
         shared_ptr<Node> dst = (*it)->dst.lock();
         auto result = seen.insert(std::make_pair((*it)->w, dst->val));
         if (!result.second) {
             // already seen, thus is duplicate so delete
             it = newNode->outEdges.erase(it);
+        } else {
+            ++it;
         }
     }
 }
