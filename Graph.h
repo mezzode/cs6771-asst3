@@ -3,11 +3,16 @@
 
 #include <map>
 #include <set>
+#include <vector>
+#include <stdexcept>
+#include <iostream>
+#include <memory>
+#include <algorithm>
 
 namespace gdwg {
+    using std::shared_ptr;
+    using std::weak_ptr;
     template <typename N, typename E> class Graph {
-        using std::shared_ptr;
-        using std::weak_ptr; // are these needed?
         public:
             // just using default constructor for now
             // Graph();
@@ -29,8 +34,9 @@ namespace gdwg {
             void next() const;
             const N& value() const;
         private:
+            struct Edge;
             struct Node {
-                Node(const N& val_): val{src_} {}
+                Node(const N& val_): val{val_} {}
                 N val;
 
                 // edges which have this node as their destination
@@ -60,19 +66,19 @@ namespace gdwg {
                 unsigned int outdegree() {
                     return outEdges.size();
                 }
-            }
+            };
 
             struct Edge {
-                Edge(shared_ptr<Node> src_, shared_ptr<Node> dst_, const E& w): src{src_}, dst{dst_}, w{w_} {}
+                Edge(shared_ptr<Node> src_, shared_ptr<Node> dst_, const E& w_): src{src_}, dst{dst_}, w{w_} {}
                 weak_ptr<Node> src;
                 weak_ptr<Node> dst;
                 E w;
-            }
+            };
 
-            std::map<N, shared_ptr<Node> nodes;
+            std::map<N, shared_ptr<Node>> nodes;
 
             mutable decltype(nodes.begin()) it;
-    }
+    };
 
     #include "Graph.tem"
 }

@@ -9,11 +9,20 @@ bool Graph<N, E>::addNode(const N& val) {
 
 template <typename N, typename E>
 bool Graph<N, E>::addEdge(const N& src, const N& dst, const E& w) {
+    if (!isNode(src) || !isNode(dst)) {
+        throw std::runtime_error();
+    }
     shared_ptr<Node> s = nodes[src];
     shared_ptr<Node> d = nodes[dst];
-    shared_ptr<Edge> e = std::make_shared<Edge>(s, d, w);
-    *s.edges.insert(e);
-    *d.edges.insert(e);
+    shared_ptr<Edge> e = s.getEdgeTo(d, w);
+    if (e == nullptr) {
+        // edge already exists
+        return false;
+    }
+    // otherwise create it
+    e = std::make_shared<Edge>(s, d, w);
+    s->outEdges.insert(e);
+    d->inEdges.insert(e);
 }
 
 template <typename N, typename E>
