@@ -37,7 +37,7 @@ bool Graph<N, E>::replace(const N& oldData, const N& newData) {
 
     shared_ptr<Node> n = nodes[oldData];
     nodes[newData] = n;
-    *n.val = newData;
+    n->val = newData;
     nodes.erase(oldData);
     return true;
 }
@@ -62,9 +62,10 @@ void Graph<N, E>::mergeReplace(const N& oldData, const N& newData) {
     }
 
     // remove duplicates i.e. same src, dest and weight
-    std::set<std::pair<E, weak_ptr<Node>>> seen;
+    std::set<std::pair<E, N>> seen;
     for (auto it = std::begin(newNode->inEdges); it != std::end(newNode->inEdges); ++it) {
-        auto result = seen.insert(std::make_pair(it->w, it->src)); // (*it)->w is the proper thingo but may be unnecessary since -> chaining?
+        shared_ptr<Node> src = (*it)->src.lock();
+        auto result = seen.insert(std::make_pair((*it)->w, src->val));
         if (!result.second) {
             // already seen, thus is duplicate so delete
             it = newNode->inEdges.erase(it);
@@ -72,7 +73,8 @@ void Graph<N, E>::mergeReplace(const N& oldData, const N& newData) {
     }
     seen.clear();
     for (auto it = std::begin(newNode->outEdges); it != std::end(newNode->outEdges); ++it) {
-        auto result = seen.insert(std::make_pair(it->w, it->src)); // (*it)->w is the proper thingo but may be unnecessary since -> chaining?
+        shared_ptr<Node> dst = (*it)->dst.lock();
+        auto result = seen.insert(std::make_pair((*it)->w, dst->val));
         if (!result.second) {
             // already seen, thus is duplicate so delete
             it = newNode->outEdges.erase(it);
@@ -106,7 +108,7 @@ void Graph<N, E>::deleteEdge(const N& src, const N& dst, const E& w) noexcept {
     if (!isNode(src) || !isNode(dst)) {
         return;
     }
-    shared_ptr<Edge> edge = nodes[src].getEdgeTo(dst, w);
+    shared_ptr<Edge> edge = nodes[src]->getEdgeTo(dst, w);
     if (edge == nullptr) {
         // edge does not exist
         return;
@@ -187,12 +189,12 @@ void Graph<N, E>::printEdges(const N& val) const {
 
 template <typename N, typename E>
 void Graph<N, E>::begin() const {
-    it = nodes.begin();
+    it = nodes.cbegin();
 }
 
 template <typename N, typename E>
 bool Graph<N, E>::end() const {
-    return it == nodes.end();
+    return it == nodes.cend();
 }
 
 template <typename N, typename E>
@@ -202,5 +204,5 @@ void Graph<N, E>::next() const {
 
 template <typename N, typename E>
 const N& Graph<N, E>::value() const {
-    return *it;
+    return it->first;
 }

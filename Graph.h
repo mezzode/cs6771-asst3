@@ -79,7 +79,7 @@ namespace gdwg {
 
             std::map<N, shared_ptr<Node>> nodes;
 
-            mutable decltype(nodes.begin()) it;
+            mutable decltype(nodes.cbegin()) it;
     };
 
     #include "Graph.tem"
